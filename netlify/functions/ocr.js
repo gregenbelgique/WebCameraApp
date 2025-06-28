@@ -1,9 +1,16 @@
 const { ImageAnnotatorClient } = require('@google-cloud/vision');
 
-// Le client va lire les identifiants directement de la variable d'environnement
-// GOOGLE_APPLICATION_CREDENTIALS (que Netlify configure à partir de GOOGLE_APPLICATION_CREDENTIALS_JSON).
-// Plus besoin de keyFilename.
-const client = new ImageAnnotatorClient();
+// IMPORTANT : Récupère le CONTENU JSON de la clé depuis la variable d'environnement Netlify.
+// Le nom de la variable est celui que tu viens de définir/renommer.
+const GOOGLE_CLOUD_CREDENTIALS_CONTENT = process.env.GOOGLE_CLOUD_VISION_CREDENTIALS; // Utilise le nouveau nom
+
+
+// Initialise le client avec les identifiants lits de la variable d'environnement.
+// La variable doit contenir le contenu JSON complet de la clé de service.
+const client = new ImageAnnotatorClient({
+  credentials: JSON.parse(GOOGLE_CLOUD_CREDENTIALS_CONTENT),
+});
+
 
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') {
@@ -63,10 +70,11 @@ exports.handler = async (event) => {
         console.error('OCR Function: Message de l\'erreur :', error.message);
         console.error('OCR Function: Stack trace :', error.stack); 
 
+        // Vérification spécifique pour l'authentification (erreur 16 de GCV)
         if (error.code && error.code === 16 && error.details && error.details.includes("API key not valid")) {
-            console.error("OCR Function: Authentification GCV error. Vérifiez la variable d'environnement GOOGLE_APPLICATION_CREDENTIALS_JSON et la facturation.");
+            console.error("OCR Function: Authentification GCV error. Vérifiez la variable d'environnement GOOGLE_CLOUD_VISION_CREDENTIALS et la facturation.");
         }
-
+        
         return {
             statusCode: 500,
             headers: { "Content-Type": "application/json" },
