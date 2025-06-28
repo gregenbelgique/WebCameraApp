@@ -1,9 +1,9 @@
 const { ImageAnnotatorClient } = require('@google-cloud/vision');
 
-// IMPORTANT : Le chemin et le nom du fichier de clé sont maintenant corrects
-const client = new ImageAnnotatorClient({
-  keyFilename: './ocr-vision-project-464316-9a01aa5260df.json', // <-- TON NOUVEAU NOM DE CLÉ EST ICI
-});
+// IMPORTANT : Le client va lire les identifiants directement de la variable d'environnement
+// GOOGLE_APPLICATION_CREDENTIALS (que Netlify configure à partir de GOOGLE_APPLICATION_CREDENTIALS_JSON).
+// Il n'est plus nécessaire de spécifier 'keyFilename' ni le chemin du fichier.
+const client = new vision.ImageAnnotatorClient();
 
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') {
@@ -16,13 +16,12 @@ exports.handler = async (event) => {
     try {
         const { imageData } = JSON.parse(event.body);
 
-        // --- LOGS TRÈS DÉTAILLÉS POUR DÉBOGUER LE FORMAT DE L'IMAGE ---
+        // LOGS DÉTAILLÉS POUR DÉBOGUER LE FORMAT DE L'IMAGE (maintenus pour le diagnostic)
         console.log('OCR Function: 1. Données image reçues (longueur):', imageData ? imageData.length : 'N/A');
         console.log('OCR Function: 2. Début des données image:', imageData ? imageData.substring(0, 50) : 'No data'); 
         console.log('OCR Function: 3. Type d\'image détecté (si préfixe):', imageData ? imageData.split(';')[0] : 'N/A');
 
         // Retire le préfixe "data:image/...", en s'assurant qu'il est là.
-        // On s'assure de n'enlever que le préfixe qui match vraiment.
         const base64Data = imageData.replace(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/, '');
 
         console.log('OCR Function: 4. Données Base64 après nettoyage (longueur):', base64Data ? base64Data.length : 'N/A');
@@ -33,11 +32,10 @@ exports.handler = async (event) => {
             console.error('OCR Function: ERREUR CRITIQUE: Le préfixe "data:image" est TOUJOURS PRÉSENT après nettoyage!');
             throw new Error("Préfixe d'image non supprimé correctement.");
         }
-        if (!base64Data || base64Data.length < 100) { // S'assurer que la chaîne n'est pas vide ou trop courte
+        if (!base64Data || base64Data.length < 100) { 
             console.error('OCR Function: ERREUR CRITIQUE: Données Base64 vides ou trop courtes après nettoyage!');
             throw new Error("Données d'image corrompues ou vides.");
         }
-
 
         const imageBuffer = Buffer.from(base64Data, 'base64');
 
@@ -45,7 +43,7 @@ exports.handler = async (event) => {
 
         // Appelle l'API Google Cloud Vision pour détecter le texte
         const [result] = await client.textDetection({
-            image: { content: imageBuffer }, // Utilisez imageBuffer, c'est ce que GCV attend
+            image: { content: imageBuffer }, 
         });
 
         const detections = result.textAnnotations;
@@ -71,7 +69,7 @@ exports.handler = async (event) => {
 
         // Vérification spécifique pour l'authentification (erreur 16 de GCV)
         if (error.code && error.code === 16 && error.details && error.details.includes("API key not valid")) {
-            console.error("OCR Function: Authentification GCV error. Check JSON key or project billing.");
+            console.error("OCR Function: Authentification GCV error. Vérifiez la variable d'environnement GOOGLE_APPLICATION_CREDENTIALS_JSON et la facturation.");
         }
         
         return {
