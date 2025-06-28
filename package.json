@@ -1,0 +1,15 @@
+{
+  "name": "mon-app-web-camera",
+  "version": "1.0.0",
+  "description": "Application web pour OCR et Gemini",
+  "main": "script.js",
+  "scripts": {
+    "start": "python3 -m http.server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/vision": "^4.0.0"
+  }
+}

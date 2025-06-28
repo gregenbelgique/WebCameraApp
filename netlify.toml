@@ -1,0 +1,8 @@
+[build]
+  publish = "." # Indique que les fichiers du site web sont dans le dossier actuel
+  functions = "netlify/functions" # Indique où se trouvent tes fonctions
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

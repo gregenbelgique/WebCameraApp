@@ -1,0 +1,294 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f4f6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    box-sizing: border-box;
+    /* IMPORTANT: Permet au body de défiler si son contenu dépasse */
+    overflow-y: auto; 
+    overflow-x: hidden; /* Empêche le défilement horizontal */
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    width: 100%;
+    /* IMPORTANT: Permet au conteneur de s'adapter au contenu, tout en étant au moins 100vh */
+    min-height: 100vh; 
+    height: auto; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    /* Ajoute un peu de padding en bas pour la visibilité de la scrollbar */
+    padding-bottom: 50px; 
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex-grow: 1; 
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.camera-container {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    /* Ratio 4:3 pour la vidéo en mode portrait par défaut, mais sera écrasé en paysage */
+    padding-top: 75%; 
+}
+
+video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Garde 'cover' pour le mode portrait pour remplir l'espace */
+}
+
+button {
+    background-color: #6366f1;
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #4f46e5;
+}
+
+button:disabled {
+    background-color: #a7a9be;
+    cursor: not-allowed;
+}
+
+.status-message, .error-message, .loading-indicator {
+    margin-top: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+}
+
+.status-message {
+    color: #4f46e5;
+}
+
+.error-message {
+    color: #dc2626;
+}
+
+.loading-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #6366f1;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.results-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    flex-grow: 1;
+    /* overflow-y: auto sera appliqué en paysage */
+}
+
+.result-section {
+    background-color: #e0e7ff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 15px;
+    text-align: left;
+    border-left: 5px solid #4f46e5;
+    width: 100%;
+    max-width: 500px;
+}
+
+.result-section h2 {
+    color: #374151;
+    font-size: 1.3em;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.result-section p {
+    color: #4b5563;
+    font-size: 1.1em;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+#questionResult {
+    background-color: #d1fae5;
+    border-left-color: #059669;
+}
+
+#questionResult h2, #questionResult p {
+    color: #065f46;
+}
+
+/* --- Styles pour l'orientation Paysage (Horizontal) --- */
+@media (orientation: landscape) {
+    .container {
+        padding: 15px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .main-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-grow: 1;
+        /* Ajout de align-items: stretch pour que les enfants flex prennent toute la hauteur disponible */
+        align-items: stretch; 
+    }
+
+    .camera-section {
+        flex: 0 0 auto;
+        width: 100px; 
+        /* IMPORTANT: Ajuste la hauteur pour que l'ensemble camera-section prenne l'espace disponible */
+        height: 100%; 
+        justify-content: center;
+        margin-right: 15px;
+        margin-bottom: 0;
+        align-self: flex-start; 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .camera-container {
+        /* IMPORTANT: Ajuste pour un ratio 16:9 plus large, qui correspond au flux vidéo */
+        width: 100px; 
+        height: 56.25px; /* 100px * (9/16) pour un ratio 16:9 */
+        padding-top: 0; 
+        border-radius: 12px;
+        margin: 0;
+        overflow: hidden;
+        position: relative;
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+        /* IMPORTANT: Affiche l'intégralité du flux vidéo, avec barres noires si nécessaire */
+        object-fit: contain; 
+    }
+
+    button#captureButton {
+        width: 100px;
+        height: 100px;
+        border-radius: 12px;
+        padding: 0;
+        font-size: 0.8em;
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .results-section {
+        flex-grow: 1;
+        margin-left: 15px;
+        width: auto;
+        justify-content: flex-start;
+        /* IMPORTANT: Définit une hauteur max pour permettre le défilement */
+        max-height: calc(100vh - 40px); /* 100vh moins le padding du container */
+        overflow-y: auto; /* Permet le défilement vertical */
+        padding-right: 10px; /* Ajoute un peu de padding pour ne pas coller la scrollbar */
+    }
+
+    #questionResult,
+    #answerResult {
+        display: block;
+    }
+
+    .result-section {
+        max-width: none;
+    }
+}
+
+/* Masquer les sections de résultat en mode portrait (par défaut) */
+@media (orientation: portrait) {
+    .results-section {
+        display: none;
+    }
+    .main-content {
+        flex-direction: column;
+    }
+    .camera-section {
+        width: 100%;
+        max-width: 480px;
+        height: auto;
+        margin-bottom: 20px;
+    }
+    .camera-container {
+        width: 100%;
+        height: auto;
+        padding-top: 75%;
+    }
+    button#captureButton {
+        width: 80%;
+        height: auto;
+        padding: 15px 25px;
+        font-size: 1.1em;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+}
