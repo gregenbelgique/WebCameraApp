@@ -1,9 +1,9 @@
 const { ImageAnnotatorClient } = require('@google-cloud/vision');
 
-// IMPORTANT : Le client va lire les identifiants directement de la variable d'environnement
+// Le client va lire les identifiants directement de la variable d'environnement
 // GOOGLE_APPLICATION_CREDENTIALS (que Netlify configure à partir de GOOGLE_APPLICATION_CREDENTIALS_JSON).
-// Il n'est plus nécessaire de spécifier 'keyFilename' ni le chemin du fichier.
-const client = new vision.ImageAnnotatorClient();
+// Plus besoin de keyFilename.
+const client = new ImageAnnotatorClient();
 
 exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') {
@@ -16,18 +16,15 @@ exports.handler = async (event) => {
     try {
         const { imageData } = JSON.parse(event.body);
 
-        // LOGS DÉTAILLÉS POUR DÉBOGUER LE FORMAT DE L'IMAGE (maintenus pour le diagnostic)
         console.log('OCR Function: 1. Données image reçues (longueur):', imageData ? imageData.length : 'N/A');
         console.log('OCR Function: 2. Début des données image:', imageData ? imageData.substring(0, 50) : 'No data'); 
         console.log('OCR Function: 3. Type d\'image détecté (si préfixe):', imageData ? imageData.split(';')[0] : 'N/A');
 
-        // Retire le préfixe "data:image/...", en s'assurant qu'il est là.
         const base64Data = imageData.replace(/^data:image\/(png|jpeg|jpg|gif|webp);base64,/, '');
 
         console.log('OCR Function: 4. Données Base64 après nettoyage (longueur):', base64Data ? base64Data.length : 'N/A');
         console.log('OCR Function: 5. Début des données Base64 nettoyées:', base64Data ? base64Data.substring(0, 50) : 'No data'); 
 
-        // Vérification critique : le préfixe a-t-il été enlevé ?
         if (base64Data && base64Data.startsWith('data:image')) {
             console.error('OCR Function: ERREUR CRITIQUE: Le préfixe "data:image" est TOUJOURS PRÉSENT après nettoyage!');
             throw new Error("Préfixe d'image non supprimé correctement.");
@@ -41,7 +38,6 @@ exports.handler = async (event) => {
 
         console.log('OCR Function: 6. Taille du Buffer image :', imageBuffer.length);
 
-        // Appelle l'API Google Cloud Vision pour détecter le texte
         const [result] = await client.textDetection({
             image: { content: imageBuffer }, 
         });
@@ -67,11 +63,10 @@ exports.handler = async (event) => {
         console.error('OCR Function: Message de l\'erreur :', error.message);
         console.error('OCR Function: Stack trace :', error.stack); 
 
-        // Vérification spécifique pour l'authentification (erreur 16 de GCV)
         if (error.code && error.code === 16 && error.details && error.details.includes("API key not valid")) {
             console.error("OCR Function: Authentification GCV error. Vérifiez la variable d'environnement GOOGLE_APPLICATION_CREDENTIALS_JSON et la facturation.");
         }
-        
+
         return {
             statusCode: 500,
             headers: { "Content-Type": "application/json" },

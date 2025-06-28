@@ -1,8 +1,12 @@
 [build]
-  publish = "." # Indique que les fichiers du site web sont dans le dossier actuel
-  functions = "netlify/functions" # Indique où se trouvent tes fonctions
+  publish = "."
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# NOUVEL AJOUT : Plugin pour installer les dépendances des fonctions
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
