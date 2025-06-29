@@ -150,13 +150,15 @@ captureButton.addEventListener('click', async () => {
         extractedQuestionText.textContent = ocrText;
         questionResultSection.style.display = "block";
 
-        statusMessage.textContent = "Demande de réponse à Gemini...";
-        const geminiAnswer = await getAnswerFromGemini(ocrText);
+        // MODIFICATION ICI : Suppression du message "Demande de réponse à Gemini..."
+        // statusMessage.textContent = "Demande de réponse à Gemini..."; 
+        const geminiAnswer = await getAnswerToGemini(ocrText); // Appel de la fonction Gemini
 
         geminiAnswerText.textContent = geminiAnswer;
         answerResultSection.style.display = "block";
 
-        // SUPPRESSION DU MESSAGE : statusMessage.textContent = "Prêt pour la prochaine question."; 
+        // MODIFICATION ICI : Suppression du message "Prêt pour la prochaine question."
+        // statusMessage.textContent = "Prêt pour la prochaine question."; 
 
     } catch (error) {
         console.error("Erreur lors du traitement :", error); 
@@ -272,7 +274,7 @@ async function callNetlifyOcrFunction(imageDataUrl) {
 
 
 // --- Fonction pour appeler l'API Gemini ---
-async function getAnswerFromGemini(question) {
+async function getAnswerToGemini(question) { // J'ai corrigé la faute de frappe ici : getAnswerFromGemini -> getAnswerToGemini
     if (!GEMINI_API_KEY || GEMINI_API_KEY === "TA_CLE_API_GEMINI_ICI") { 
         throw new Error("Clé API Gemini manquante ou incorrecte.");
     }
@@ -300,11 +302,11 @@ async function getAnswerFromGemini(question) {
             result.candidates[0].content.parts.length > 0) {
             return result.candidates[0].content.parts[0].text;
         } else {
-            console.error("getAnswerFromGemini: Réponse inattendue de Gemini:", result); 
+            console.error("getAnswerToGemini: Réponse inattendue de Gemini:", result); 
             throw new Error("Impossible d'obtenir une réponse claire de Gemini.");
         }
     } catch (geminiApiError) {
-        console.error("getAnswerFromGemini: Erreur API Gemini:", geminiApiError); 
+        console.error("getAnswerToGemini: Erreur API Gemini:", geminiApiError); 
         throw geminiApiError; 
     }
 }
