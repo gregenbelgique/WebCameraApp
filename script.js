@@ -14,6 +14,9 @@ const UPSCALE_FACTOR = 1;
 
 const DEBUG_SHOW_BINARIZED_IMAGE = true; 
 
+// NOUVELLE MODIFICATION : Le prompt pour Gemini pour les réponses QCM (lettre seulement)
+const GEMINI_QCM_PROMPT_PREFIX = "Pour la question de QCM PMI/PMP suivante, réponds uniquement avec la lettre (A, B, C ou D) de la bonne réponse. Ne donne aucune explication, aucun autre texte, juste la lettre. La question est : ";
+
 
 // --- Références aux éléments HTML (pour interagir avec la page) ---
 const cameraFeed = document.getElementById('cameraFeed');
@@ -280,7 +283,8 @@ async function getAnswerFromGemini(question) {
     }
 
     // AJOUT DU CONTEXTE PMI/PMP AU PROMPT
-    const geminiPrompt = `En tant qu'expert en méthodologies PMI et PMP, réponds à cette question d'entraînement en te basant sur les principes du PMBOK et les bonnes pratiques du PMI : ${question}`;
+    // UTILISE LA NOUVELLE CONSTANTE GEMINI_QCM_PROMPT_PREFIX
+    const geminiPrompt = GEMINI_QCM_PROMPT_PREFIX + question;
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
