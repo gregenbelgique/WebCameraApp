@@ -1,3 +1,7 @@
+// --- PREMIER POINT DE CONTRÔLE : Voir si le script charge du tout ---
+alert("1. script.js a commencé à s'exécuter !"); 
+
+
 // Ton API Key Gemini, insérée directement.
 const GEMINI_API_KEY = "AIzaSyCQWmAaX7TH6_mYQFuk9TbbVK19wLBkxs4"; 
 
@@ -15,8 +19,6 @@ const DEBUG_SHOW_BINARIZED_IMAGE = true;
 const cameraFeed = document.getElementById('cameraFeed');
 const photoCanvas = document.getElementById('photoCanvas'); 
 
-// CRÉATION DES CANVASES TEMPORAIRES ET AJOUT AU CORPS DU DOCUMENT
-// Il est crucial que toutes ces lignes soient présentes et correctement exécutées.
 const grayscaleCanvas = document.createElement('canvas');
 grayscaleCanvas.style.display = 'none';
 document.body.appendChild(grayscaleCanvas);
@@ -51,6 +53,7 @@ let stream;
 
 // --- Fonction de démarrage de la caméra ---
 async function startCamera() {
+    alert("3. Fonction startCamera() est appelée !"); // POINT DE CONTRÔLE DANS startCamera
     try {
         console.log("startCamera: Tentative de démarrage de la caméra..."); 
         stream = await navigator.mediaDevices.getUserMedia({ 
@@ -59,12 +62,13 @@ async function startCamera() {
             } 
         }); 
         console.log("startCamera: Caméra démarrée avec succès."); 
+        alert("4. Caméra démarrée avec succès !"); // POINT DE CONTRÔLE DANS SUCCÈS startCamera
         
         cameraFeed.srcObject = stream;
         statusMessage.textContent = "Caméra prête. Visez la question et appuyez sur le bouton.";
         captureButton.disabled = false;
     } catch (error) {
-        alert(`ERREUR CAMÉRA : ${error.name}\nMessage : ${error.message}\n(Vérifiez aussi la console si possible pour plus de détails)`);
+        alert(`ERREUR CAMÉRA DANS CATCH : ${error.name}\nMessage : ${error.message}\n(Vérifiez aussi la console si possible pour plus de détails)`);
         console.error("startCamera: Erreur d'accès à la caméra :", error); 
         if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
              errorMessage.textContent = "Caméra arrière introuvable ou non accessible. Vérifiez si une autre application l'utilise ou si la permission est bloquée.";
@@ -142,3 +146,156 @@ captureButton.addEventListener('click', async () => {
             errorMessage.textContent = "Aucun texte significatif n'a été détecté dans l'image.";
             loadingIndicator.style.display = "none";
             captureButton.disabled = false;
+            return;
+        }
+
+        extractedQuestionText.textContent = ocrText;
+        questionResultSection.style.display = "block";
+
+        statusMessage.textContent = "Demande de réponse à Gemini...";
+        const geminiAnswer = await getAnswerFromGemini(ocrText);
+
+        geminiAnswerText.textContent = geminiAnswer;
+        answerResultSection.style.display = "block";
+
+        statusMessage.textContent = "Prêt pour la prochaine question.";
+
+    } catch (error) {
+        console.error("Erreur lors du traitement :", error); 
+        errorMessage.textContent = `Une erreur est survenue : ${error.message}`;
+    } finally {
+        loadingIndicator.style.display = "none";
+        captureButton.disabled = false;
+    }
+});
+
+// --- Fonctions de prétraitement ---
+async function grayscaleImage(sourceCanvas) {
+    // Corrected context access
+    const context = grayscaleCanvas.getContext('2d'); 
+    grayscaleCanvas.width = sourceCanvas.width;
+    grayscaleCanvas.height = sourceCanvas.height;
+    context.drawImage(sourceCanvas, 0, 0);
+
+    const imageData = context.getImageData(0, 0, grayscaleCanvas.width, grayscaleCanvas.height); 
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+        const color = avg; 
+        data[i] = color;     
+        data[i + 1] = color; 
+        data[i + 2] = color; 
+    }
+    context.putImageData(imageData, 0, 0);
+    return grayscaleCanvas; 
+}
+
+async function invertImage(sourceCanvas) {
+    const context = invertedCanvas.getContext('2d');
+    invertedCanvas.width = sourceCanvas.width;
+    invertedCanvas.height = sourceCanvas.height;
+    context.drawImage(sourceCanvas, 0, 0);
+
+    const imageData = context.getImageData(0, 0, invertedCanvas.width, invertedCanvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = 255 - data[i];     
+        data[i + 1] = 255 - data[i + 1]; 
+        data[i + 2] = 255 - data[i + 2]; 
+    }
+    context.putImageData(imageData, 0, 0);
+    return invertedCanvas; 
+}
+
+async function upscaleImage(sourceCanvas, factor) {
+    const context = upscaledCanvas.getContext('2d');
+    upscaledCanvas.width = sourceCanvas.width * factor;
+    upscaledCanvas.height = sourceCanvas.height * factor;
+    context.drawImage(sourceCanvas, 0, 0, upscaledCanvas.width, upscaledCanvas.height);
+    return upscaledCanvas; 
+}
+
+async function binarizeImage(sourceCanvas) {
+    const sourceContext = sourceCanvas.getContext('2d');
+    const imageData = sourceContext.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+    const data = imageData.data;
+
+    binarizedCanvas.width = sourceCanvas.width;
+    binarizedCanvas.height = sourceCanvas.height;
+    const binarizedContext = binarizedCanvas.getContext('2d');
+
+    const threshold = BINARIZATION_THRESHOLD; 
+
+    for (let i = 0; i < data.length; i += 4) {
+        const brightness = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+        const color = brightness < threshold ? 0 : 255;
+        data[i] = color;     
+        data[i + 1] = color; 
+        data[i + 2] = color; 
+        data[i + 3] = 255;   
+    }
+
+    binarizedCanvas.putImageData(imageData, 0, 0); 
+    return binarizedCanvas; 
+}
+
+
+// --- Fonction OCR (Appelle la Netlify Function pour l'OCR) ---
+async function performOcr(imageDataUrl) {
+    try { 
+        const ocrResult = await callNetlifyOcrFunction(imageDataUrl); 
+        statusMessage.textContent = `OCR terminé. Texte reconnu.`;
+        return ocrResult;
+    } catch (ocrError) {
+        console.error("performOcr: Erreur OCR (Netlify Function):", ocrError); 
+        throw ocrError; 
+    }
+}
+
+
+// --- Fonction pour appeler la Netlify Function pour l'OCR ---
+async function callNetlifyOcrFunction(imageDataUrl) {
+    const response = await fetch('/.netlify/functions/ocr', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: imageDataUrl }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+        return data.text;
+    } else {
+        console.error('callNetlifyOcrFunction: Erreur de la Netlify Function :', data.error);
+        throw new Error(data.error || 'Erreur lors de l\'appel de la fonction OCR');
+    }
+}
+
+
+// --- Fonction pour appeler l'API Gemini ---
+async function getAnswerFromGemini(question) {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === "TA_CLE_API_GEMINI_ICI") { 
+        throw new Error("Clé API Gemini manquante ou incorrecte.");
+    }
+
+    // AJOUT DU CONTEXTE PMI/PMP AU PROMPT
+    const geminiPrompt = `En tant qu'expert en méthodologies PMI et PMP, réponds à cette question d'entraînement en te basant sur les principes du PMBOK et les bonnes pratiques du PMI : ${question}`;
+
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    try { 
+        const chatHistory = [{ role: "user", parts: [{ text: geminiPrompt }] }]; 
+
+        const payload = { contents: chatHistory };
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (result.candidates && result.candidates.length >
