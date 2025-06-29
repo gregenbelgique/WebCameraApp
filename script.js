@@ -137,7 +137,8 @@ captureButton.addEventListener('click', async () => {
             console.log("captureButton: Image de débogage affichée."); 
         }
         
-        statusMessage.textContent = "Envoi de l'image à l'OCR (Google Vision)...";
+        // MODIFICATION ICI : Suppression du message "Envoi de l'image à l'OCR..."
+        // statusMessage.textContent = "Envoi de l'image à l'OCR (Google Vision)...";
         const ocrText = await performOcr(imageToOcrCanvas.toDataURL('image/png', 1.0)); 
 
         if (!ocrText || ocrText.trim() === '') {
@@ -245,7 +246,8 @@ async function binarizeImage(sourceCanvas) {
 async function performOcr(imageDataUrl) {
     try { 
         const ocrResult = await callNetlifyOcrFunction(imageDataUrl); 
-        statusMessage.textContent = `OCR terminé. Texte reconnu.`;
+        // MODIFICATION ICI : Suppression du message "OCR terminé. Texte reconnu."
+        // statusMessage.textContent = `OCR terminé. Texte reconnu.`;
         return ocrResult;
     } catch (ocrError) {
         console.error("performOcr: Erreur OCR (Netlify Function):", ocrError); 
@@ -274,7 +276,7 @@ async function callNetlifyOcrFunction(imageDataUrl) {
 
 
 // --- Fonction pour appeler l'API Gemini ---
-async function getAnswerToGemini(question) { // J'ai corrigé la faute de frappe ici : getAnswerFromGemini -> getAnswerToGemini
+async function getAnswerToGemini(question) { 
     if (!GEMINI_API_KEY || GEMINI_API_KEY === "TA_CLE_API_GEMINI_ICI") { 
         throw new Error("Clé API Gemini manquante ou incorrecte.");
     }
