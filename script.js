@@ -10,6 +10,9 @@ const UPSCALE_FACTOR = 1;
 
 const DEBUG_SHOW_BINARIZED_IMAGE = true; 
 
+// NOUVEAU : Le prompt pour Gemini avec le contexte PMI/PMP
+const GEMINI_PMP_CONTEXT_PROMPT = "En tant qu'expert en méthodologies PMI et PMP, réponds à cette question d'entraînement en te basant sur les principes du PMBOK et les bonnes pratiques du PMI : ";
+
 
 // --- Références aux éléments HTML (pour interagir avec la page) ---
 const cameraFeed = document.getElementById('cameraFeed');
@@ -47,12 +50,8 @@ const debugBinarizedImage = document.getElementById('debugBinarizedImage');
 
 let stream; 
 
-// --- ALERTES DE DÉBOGAGE POUR SUIVRE L'EXÉCUTION ---
-alert("1. script.js est chargé et commence à s'exécuter."); // PREMIER POINT DE CONTRÔLE
-
 // --- Fonction de démarrage de la caméra ---
 async function startCamera() {
-    alert("3. Fonction startCamera() est appelée."); // TROISIÈME POINT DE CONTRÔLE
     try {
         console.log("startCamera: Tentative de démarrage de la caméra..."); 
         stream = await navigator.mediaDevices.getUserMedia({ 
@@ -61,7 +60,6 @@ async function startCamera() {
             } 
         }); 
         console.log("startCamera: Caméra démarrée avec succès."); 
-        alert("4. Caméra démarrée avec succès."); // QUATRIÈME POINT DE CONTRÔLE
         
         cameraFeed.srcObject = stream;
         statusMessage.textContent = "Caméra prête. Visez la question et appuyez sur le bouton.";
@@ -105,31 +103,26 @@ captureButton.addEventListener('click', async () => {
         context.drawImage(cameraFeed, 0, 0, photoCanvas.width, photoCanvas.height);
         console.log("captureButton: Image dessinée sur le canvas."); 
 
-        let imageToOcrCanvas = photoCanvas; // Commence avec le canvas original
+        let imageToOcrCanvas = photoCanvas; 
 
         console.log("captureButton: Début prétraitement."); 
         
         statusMessage.textContent = "Conversion en niveaux de gris...";
         imageToOcrCanvas = await grayscaleImage(imageToOcrCanvas);
-        console.log("captureButton: Après niveaux de gris. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
-
 
         if (INVERT_COLORS) {
             statusMessage.textContent = "Inversion des couleurs...";
             imageToOcrCanvas = await invertImage(imageToOcrCanvas);
-            console.log("captureButton: Après inversion. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
         }
 
         if (ENABLE_BINARIZATION) { 
             statusMessage.textContent = "Préparation de l'image (binarisation)...";
             imageToOcrCanvas = await binarizeImage(imageToOcrCanvas); 
-            console.log("captureButton: Après binarisation. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
         }
 
         if (UPSCALE_FACTOR > 1) { 
             statusMessage.textContent = "Agrandissement de l'image...";
             imageToOcrCanvas = await upscaleImage(imageToOcrCanvas, UPSCALE_FACTOR); 
-            console.log("captureButton: Après upscaling. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
         }
         
         if (DEBUG_SHOW_BINARIZED_IMAGE) { 
@@ -139,8 +132,7 @@ captureButton.addEventListener('click', async () => {
         }
         
         statusMessage.textContent = "Envoi de l'image à l'OCR (Google Vision)...";
-        const ocrText = await callNetlifyOcrFunction(imageToOcrCanvas.toDataURL('image/png', 1.0)); 
-        console.log("captureButton: OCR terminé. Texte reconnu:", ocrText); 
+        const ocrText = await performOcr(imageToOcrCanvas.toDataURL('image/png', 1.0)); 
 
         if (!ocrText || ocrText.trim() === '') {
             errorMessage.textContent = "Aucun texte significatif n'a été détecté dans l'image.";
@@ -161,7 +153,7 @@ captureButton.addEventListener('click', async () => {
         statusMessage.textContent = "Prêt pour la prochaine question.";
 
     } catch (error) {
-        console.error("captureButton: Erreur lors du traitement global :", error); 
+        console.error("Erreur lors du traitement :", error);
         errorMessage.textContent = `Une erreur est survenue : ${error.message}`;
     } finally {
         loadingIndicator.style.display = "none";
@@ -169,7 +161,7 @@ captureButton.addEventListener('click', async () => {
     }
 });
 
-// --- Fonctions de prétraitement (inchangées) ---
+// --- Fonctions de prétraitement ---
 async function grayscaleImage(sourceCanvas) {
     if (!grayscaleCanvas.getContext) { console.error("grayscaleCanvas non disponible."); return sourceCanvas; }
     const context = grayscaleCanvas.getContext('2d');
@@ -248,7 +240,6 @@ async function binarizeImage(sourceCanvas) {
 // --- Fonction OCR (Appelle la Netlify Function pour l'OCR) ---
 async function performOcr(imageDataUrl) {
     try { 
-        // Ici, on appelle notre propre fonction pour le service OCR (Google Vision via Netlify Function)
         const ocrResult = await callNetlifyOcrFunction(imageDataUrl); 
         statusMessage.textContent = `OCR terminé. Texte reconnu.`;
         return ocrResult;
@@ -284,10 +275,13 @@ async function getAnswerFromGemini(question) {
         throw new Error("Clé API Gemini manquante ou incorrecte.");
     }
 
+    // AJOUT DU CONTEXTE PMI/PMP AU PROMPT
+    const geminiPrompt = `En tant qu'expert en méthodologies PMI et PMP, réponds à cette question d'entraînement en te basant sur les principes du PMBOK et les bonnes pratiques du PMI : ${question}`;
+
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try { 
-        const chatHistory = [{ role: "user", parts: [{ text: `Réponds à cette question d'entraînement : ${question}` }] }];
+        const chatHistory = [{ role: "user", parts: [{ text: geminiPrompt }] }]; // Utilise le nouveau prompt
 
         const payload = { contents: chatHistory };
 
