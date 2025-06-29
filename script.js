@@ -106,7 +106,7 @@ captureButton.addEventListener('click', async () => {
         context.drawImage(cameraFeed, 0, 0, photoCanvas.width, photoCanvas.height);
         console.log("captureButton: Image dessinée sur le canvas."); 
 
-        let imageToOcrCanvas = photoCanvas; 
+        let imageToOcrCanvas = photoCanvas; // Commence avec le canvas original
 
         console.log("captureButton: Début prétraitement."); 
         
@@ -171,7 +171,6 @@ captureButton.addEventListener('click', async () => {
 
 // --- Fonctions de prétraitement ---
 async function grayscaleImage(sourceCanvas) {
-    // Corrected context access
     const context = grayscaleCanvas.getContext('2d'); 
     grayscaleCanvas.width = sourceCanvas.width;
     grayscaleCanvas.height = sourceCanvas.height;
@@ -298,4 +297,19 @@ async function getAnswerFromGemini(question) {
 
         const result = await response.json();
 
-        if (result.candidates && result.candidates.length >
+        if (result.candidates && result.candidates.length > 0 &&
+            result.candidates[0].content && result.candidates[0].content.parts &&
+            result.candidates[0].content.parts.length > 0) {
+            return result.candidates[0].content.parts[0].text;
+        } else {
+            console.error("getAnswerFromGemini: Réponse inattendue de Gemini:", result); 
+            throw new Error("Impossible d'obtenir une réponse claire de Gemini.");
+        }
+    } catch (geminiApiError) {
+        console.error("getAnswerFromGemini: Erreur API Gemini:", geminiApiError); 
+        throw geminiApiError; 
+    }
+}
+
+// --- Démarre la caméra quand la page est entièrement chargée ---
+document.addEventListener('DOMContentLoaded', startCamera);
