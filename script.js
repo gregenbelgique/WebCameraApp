@@ -1,5 +1,5 @@
 // --- PREMIER POINT DE CONTRÔLE : Voir si le script charge du tout ---
-alert("1. script.js a commencé à s'exécuter !"); 
+// alert("1. script.js a commencé à s'exécuter !"); // Désactivé après le premier debug
 
 
 // Ton API Key Gemini, insérée directement.
@@ -14,7 +14,7 @@ const UPSCALE_FACTOR = 1;
 
 const DEBUG_SHOW_BINARIZED_IMAGE = true; 
 
-// NOUVELLE MODIFICATION : Le prompt pour Gemini pour les réponses QCM (lettre seulement)
+// Le prompt pour Gemini pour les réponses QCM (lettre seulement)
 const GEMINI_QCM_PROMPT_PREFIX = "Pour la question de QCM PMI/PMP suivante, réponds uniquement avec la lettre (A, B, C ou D) de la bonne réponse. Ne donne aucune explication, aucun autre texte, juste la lettre. La question est : ";
 
 
@@ -56,7 +56,7 @@ let stream;
 
 // --- Fonction de démarrage de la caméra ---
 async function startCamera() {
-    alert("3. Fonction startCamera() est appelée !"); // POINT DE CONTRÔLE DANS startCamera
+    // alert("3. Fonction startCamera() est appelée !"); // Désactivé après le debug
     try {
         console.log("startCamera: Tentative de démarrage de la caméra..."); 
         stream = await navigator.mediaDevices.getUserMedia({ 
@@ -65,13 +65,13 @@ async function startCamera() {
             } 
         }); 
         console.log("startCamera: Caméra démarrée avec succès."); 
-        alert("4. Caméra démarrée avec succès !"); // POINT DE CONTRÔLE DANS SUCCÈS startCamera
+        // alert("4. Caméra démarrée avec succès !"); // Désactivé après le debug
         
         cameraFeed.srcObject = stream;
         statusMessage.textContent = "Caméra prête. Visez la question et appuyez sur le bouton.";
         captureButton.disabled = false;
     } catch (error) {
-        alert(`ERREUR CAMÉRA DANS CATCH : ${error.name}\nMessage : ${error.message}\n(Vérifiez aussi la console si possible pour plus de détails)`);
+        // alert(`ERREUR CAMÉRA DANS CATCH : ${error.name}\nMessage : ${error.message}\n(...)`); // Désactivé après le debug
         console.error("startCamera: Erreur d'accès à la caméra :", error); 
         if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
              errorMessage.textContent = "Caméra arrière introuvable ou non accessible. Vérifiez si une autre application l'utilise ou si la permission est bloquée.";
@@ -109,31 +109,26 @@ captureButton.addEventListener('click', async () => {
         context.drawImage(cameraFeed, 0, 0, photoCanvas.width, photoCanvas.height);
         console.log("captureButton: Image dessinée sur le canvas."); 
 
-        let imageToOcrCanvas = photoCanvas; // Commence avec le canvas original
+        let imageToOcrCanvas = photoCanvas; 
 
         console.log("captureButton: Début prétraitement."); 
         
         statusMessage.textContent = "Conversion en niveaux de gris...";
         imageToOcrCanvas = await grayscaleImage(imageToOcrCanvas);
-        console.log("captureButton: Après niveaux de gris. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
-
 
         if (INVERT_COLORS) {
             statusMessage.textContent = "Inversion des couleurs...";
             imageToOcrCanvas = await invertImage(imageToOcrCanvas);
-            console.log("captureButton: Après inversion. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
         }
 
         if (ENABLE_BINARIZATION) { 
             statusMessage.textContent = "Préparation de l'image (binarisation)...";
             imageToOcrCanvas = await binarizeImage(imageToOcrCanvas); 
-            console.log("captureButton: Après binarisation. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
         }
 
         if (UPSCALE_FACTOR > 1) { 
             statusMessage.textContent = "Agrandissement de l'image...";
             imageToOcrCanvas = await upscaleImage(imageToOcrCanvas, UPSCALE_FACTOR); 
-            console.log("captureButton: Après upscaling. imageToOcrCanvas est un canvas ?", imageToOcrCanvas instanceof HTMLCanvasElement); 
         }
         
         if (DEBUG_SHOW_BINARIZED_IMAGE) { 
@@ -161,7 +156,7 @@ captureButton.addEventListener('click', async () => {
         geminiAnswerText.textContent = geminiAnswer;
         answerResultSection.style.display = "block";
 
-        statusMessage.textContent = "Prêt pour la prochaine question.";
+        // SUPPRESSION DU MESSAGE : statusMessage.textContent = "Prêt pour la prochaine question."; 
 
     } catch (error) {
         console.error("Erreur lors du traitement :", error); 
@@ -283,7 +278,6 @@ async function getAnswerFromGemini(question) {
     }
 
     // AJOUT DU CONTEXTE PMI/PMP AU PROMPT
-    // UTILISE LA NOUVELLE CONSTANTE GEMINI_QCM_PROMPT_PREFIX
     const geminiPrompt = GEMINI_QCM_PROMPT_PREFIX + question;
 
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;

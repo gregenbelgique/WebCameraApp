@@ -68,26 +68,27 @@ video {
     object-fit: cover; 
 }
 
-button {
+button#captureButton { /* Cible le bouton par son ID pour la taille */
     background-color: #6366f1;
     color: white;
     border: none;
-    padding: 15px 25px;
+    /* Ancien padding: 15px 25px; */
+    padding: 19.5px 32.5px; /* Augmenté de 30% environ */
     border-radius: 8px;
     font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    max-width: 300px;
+    max-width: 390px; /* Augmenté de 30% (300*1.3) */
     margin-top: 20px;
 }
 
-button:hover {
+button#captureButton:hover {
     background-color: #4f46e5;
 }
 
-button:disabled {
+button#captureButton:disabled {
     background-color: #a7a9be;
     cursor: not-allowed;
 }
@@ -175,24 +176,27 @@ button:disabled {
 }
 
 #answerResult {
-    /* Nouvelle règle pour la réponse Gemini */
-    display: flex; /* Utilise flexbox pour centrer le contenu */
+    display: flex; 
     flex-direction: column;
-    align-items: center; /* Centre horizontalement */
-    justify-content: center; /* Centre verticalement */
+    align-items: center; 
+    justify-content: center; 
     height: 50vh; /* Prend la moitié de la hauteur du viewport */
-    background-color: #f0f8ff; /* Couleur de fond pour la réponse */
-    border-left: 5px solid #007bff; /* Nouvelle couleur de bordure */
+    background-color: #f0f8ff; 
+    border-left: 5px solid #007bff; 
+    margin-top: 0; /* REMONTÉ : Supprime la marge supérieure */
+    margin-bottom: 15px; /* Ajoute une marge en bas pour séparer de l'autre encadré */
 }
 
 #geminiAnswerText {
-    font-size: 15em; /* Taille de police très élevée */
+    font-size: 22.5em; /* Augmenté de 50% (15em * 1.5) */
     font-weight: bold;
-    color: #007bff; /* Couleur pour la lettre */
+    color: #007bff; 
     text-align: center;
-    margin: 0; /* Supprime les marges par défaut des paragraphes */
-    line-height: 1; /* Assure que la ligne n'est pas trop haute */
+    line-height: 1;
+    padding: 0; /* Pour s'assurer qu'il n'y a pas de padding inutile */
+    margin: 0; /* Pour s'assurer qu'il n'y a pas de marges inutiles */
 }
+
 
 /* --- Styles pour l'orientation Paysage (Horizontal) --- */
 @media (orientation: landscape) {
@@ -226,7 +230,7 @@ button:disabled {
 
     .camera-container {
         width: 100px; 
-        height: 56.25px; /* 100px * (9/16) pour un ratio 16:9 */
+        height: 56.25px; 
         padding-top: 0; 
         border-radius: 12px;
         margin: 0;
@@ -240,9 +244,9 @@ button:disabled {
         object-fit: contain; 
     }
 
-    button#captureButton {
-        width: 100px;
-        height: 100px;
+    button#captureButton { /* Cible le bouton par son ID pour la taille */
+        width: 130px; /* Augmenté de 30% (100*1.3) */
+        height: 130px; /* Augmenté de 30% (100*1.3) */
         border-radius: 12px;
         padding: 0;
         font-size: 0.8em;
@@ -275,12 +279,14 @@ button:disabled {
     }
 
     #answerResult {
-        height: auto; /* La hauteur s'adapte en paysage */
-        min-height: 50vh; /* Minimum 50% de la hauteur */
+        height: auto; 
+        min-height: 50vh; 
+        margin-top: 0; /* REMONTÉ : Supprime la marge supérieure */
+        margin-bottom: 15px; /* Ajoute une marge en bas */
     }
 
     #geminiAnswerText {
-        font-size: 10em; /* Ajuste pour le paysage si 15em est trop grand */
+        font-size: 15em; /* Ajusté pour le paysage, 15em*1.5 si 10em n'était pas la base */
     }
 }
 
@@ -303,10 +309,10 @@ button:disabled {
         height: auto;
         padding-top: 75%;
     }
-    button#captureButton {
+    button#captureButton { /* Cible le bouton par son ID pour la taille */
         width: 80%;
         height: auto;
-        padding: 15px 25px;
+        padding: 19.5px 32.5px; /* Augmenté de 30% */
         font-size: 1.1em;
         border-radius: 8px;
         margin-top: 20px;
