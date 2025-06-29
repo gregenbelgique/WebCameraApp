@@ -10,8 +10,8 @@ const UPSCALE_FACTOR = 1;
 
 const DEBUG_SHOW_BINARIZED_IMAGE = true; 
 
-// NOUVEAU : Le prompt pour Gemini avec le contexte PMI/PMP
-const GEMINI_PMP_CONTEXT_PROMPT = "En tant qu'expert en méthodologies PMI et PMP, réponds à cette question d'entraînement en te basant sur les principes du PMBOK et les bonnes pratiques du PMI : ";
+// NOUVELLE MODIFICATION : Le prompt pour Gemini pour les réponses QCM (lettre seulement)
+const GEMINI_QCM_PROMPT_PREFIX = "En tant qu'expert en QCM PMI et PMP, pour la question d'entraînement suivante, identifie la lettre de la bonne réponse (A, B, C ou D) et ne renvoie QUE cette lettre, sans explication, sans ponctuation, et sans aucun autre texte. La question est : ";
 
 
 // --- Références aux éléments HTML (pour interagir avec la page) ---
@@ -60,12 +60,13 @@ async function startCamera() {
             } 
         }); 
         console.log("startCamera: Caméra démarrée avec succès."); 
+        // SUPPRESSION DE LA POP-UP : alert("4. Caméra démarrée avec succès."); 
         
         cameraFeed.srcObject = stream;
         statusMessage.textContent = "Caméra prête. Visez la question et appuyez sur le bouton.";
         captureButton.disabled = false;
     } catch (error) {
-        alert(`ERREUR CAMÉRA : ${error.name}\nMessage : ${error.message}\n(Vérifiez aussi la console si possible pour plus de détails)`);
+        // SUPPRESSION DE LA POP-UP D'ERREUR : alert(`ERREUR CAMÉRA : ${error.name}\nMessage : ${error.message}\n(...)`);
         console.error("startCamera: Erreur d'accès à la caméra :", error); 
         if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
              errorMessage.textContent = "Caméra arrière introuvable ou non accessible. Vérifiez si une autre application l'utilise ou si la permission est bloquée.";
@@ -153,7 +154,7 @@ captureButton.addEventListener('click', async () => {
         statusMessage.textContent = "Prêt pour la prochaine question.";
 
     } catch (error) {
-        console.error("Erreur lors du traitement :", error);
+        console.error("Erreur lors du traitement :", error); 
         errorMessage.textContent = `Une erreur est survenue : ${error.message}`;
     } finally {
         loadingIndicator.style.display = "none";
@@ -169,7 +170,7 @@ async function grayscaleImage(sourceCanvas) {
     grayscaleCanvas.height = sourceCanvas.height;
     context.drawImage(sourceCanvas, 0, 0);
 
-    const imageData = context.getImageData(0, 0, grayscaleCanvas.width, grayscaleCanvas.height);
+    const imageData = context.getContext('2d').getImageData(0, 0, grayscaleCanvas.width, grayscaleCanvas.height); // Corrected context
     const data = imageData.data;
 
     for (let i = 0; i < data.length; i += 4) {
@@ -232,7 +233,7 @@ async function binarizeImage(sourceCanvas) {
         data[i + 3] = 255;   
     }
 
-    binarizedCanvas.putImageData(imageData, 0, 0); 
+    binarizedContext.putImageData(imageData, 0, 0); 
     return binarizedCanvas; 
 }
 
@@ -281,7 +282,7 @@ async function getAnswerFromGemini(question) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     try { 
-        const chatHistory = [{ role: "user", parts: [{ text: geminiPrompt }] }]; // Utilise le nouveau prompt
+        const chatHistory = [{ role: "user", parts: [{ text: geminiPrompt }] }]; 
 
         const payload = { contents: chatHistory };
 

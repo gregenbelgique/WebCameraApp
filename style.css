@@ -9,9 +9,8 @@ body {
     align-items: flex-start;
     min-height: 100vh;
     box-sizing: border-box;
-    /* IMPORTANT: Permet au body de défiler si son contenu dépasse */
     overflow-y: auto; 
-    overflow-x: hidden; /* Empêche le défilement horizontal */
+    overflow-x: hidden; 
 }
 
 .container {
@@ -21,7 +20,6 @@ body {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
     max-width: 1200px;
     width: 100%;
-    /* IMPORTANT: Permet au conteneur de s'adapter au contenu, tout en étant au moins 100vh */
     min-height: 100vh; 
     height: auto; 
     display: flex;
@@ -29,7 +27,6 @@ body {
     align-items: center;
     justify-content: flex-start;
     box-sizing: border-box;
-    /* Ajoute un peu de padding en bas pour la visibilité de la scrollbar */
     padding-bottom: 50px; 
 }
 
@@ -59,7 +56,6 @@ body {
     border-radius: 8px;
     overflow: hidden;
     position: relative;
-    /* Ratio 4:3 pour la vidéo en mode portrait par défaut, mais sera écrasé en paysage */
     padding-top: 75%; 
 }
 
@@ -69,7 +65,7 @@ video {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Garde 'cover' pour le mode portrait pour remplir l'espace */
+    object-fit: cover; 
 }
 
 button {
@@ -141,7 +137,6 @@ button:disabled {
     align-items: center;
     justify-content: flex-start;
     flex-grow: 1;
-    /* overflow-y: auto sera appliqué en paysage */
 }
 
 .result-section {
@@ -179,6 +174,26 @@ button:disabled {
     color: #065f46;
 }
 
+#answerResult {
+    /* Nouvelle règle pour la réponse Gemini */
+    display: flex; /* Utilise flexbox pour centrer le contenu */
+    flex-direction: column;
+    align-items: center; /* Centre horizontalement */
+    justify-content: center; /* Centre verticalement */
+    height: 50vh; /* Prend la moitié de la hauteur du viewport */
+    background-color: #f0f8ff; /* Couleur de fond pour la réponse */
+    border-left: 5px solid #007bff; /* Nouvelle couleur de bordure */
+}
+
+#geminiAnswerText {
+    font-size: 15em; /* Taille de police très élevée */
+    font-weight: bold;
+    color: #007bff; /* Couleur pour la lettre */
+    text-align: center;
+    margin: 0; /* Supprime les marges par défaut des paragraphes */
+    line-height: 1; /* Assure que la ligne n'est pas trop haute */
+}
+
 /* --- Styles pour l'orientation Paysage (Horizontal) --- */
 @media (orientation: landscape) {
     .container {
@@ -193,14 +208,12 @@ button:disabled {
         justify-content: space-between;
         align-items: flex-start;
         flex-grow: 1;
-        /* Ajout de align-items: stretch pour que les enfants flex prennent toute la hauteur disponible */
         align-items: stretch; 
     }
 
     .camera-section {
         flex: 0 0 auto;
         width: 100px; 
-        /* IMPORTANT: Ajuste la hauteur pour que l'ensemble camera-section prenne l'espace disponible */
         height: 100%; 
         justify-content: center;
         margin-right: 15px;
@@ -212,7 +225,6 @@ button:disabled {
     }
 
     .camera-container {
-        /* IMPORTANT: Ajuste pour un ratio 16:9 plus large, qui correspond au flux vidéo */
         width: 100px; 
         height: 56.25px; /* 100px * (9/16) pour un ratio 16:9 */
         padding-top: 0; 
@@ -225,7 +237,6 @@ button:disabled {
     video {
         width: 100%;
         height: 100%;
-        /* IMPORTANT: Affiche l'intégralité du flux vidéo, avec barres noires si nécessaire */
         object-fit: contain; 
     }
 
@@ -248,10 +259,10 @@ button:disabled {
         margin-left: 15px;
         width: auto;
         justify-content: flex-start;
-        /* IMPORTANT: Définit une hauteur max pour permettre le défilement */
-        max-height: calc(100vh - 40px); /* 100vh moins le padding du container */
-        overflow-y: auto; /* Permet le défilement vertical */
-        padding-right: 10px; /* Ajoute un peu de padding pour ne pas coller la scrollbar */
+        height: 100%; 
+        max-height: calc(100vh - 40px); 
+        overflow-y: auto; 
+        padding-right: 10px; 
     }
 
     #questionResult,
@@ -261,6 +272,15 @@ button:disabled {
 
     .result-section {
         max-width: none;
+    }
+
+    #answerResult {
+        height: auto; /* La hauteur s'adapte en paysage */
+        min-height: 50vh; /* Minimum 50% de la hauteur */
+    }
+
+    #geminiAnswerText {
+        font-size: 10em; /* Ajuste pour le paysage si 15em est trop grand */
     }
 }
 
