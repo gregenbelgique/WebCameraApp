@@ -245,7 +245,7 @@ button#captureButton:disabled {
         object-fit: contain; 
     }
 
-    button#captureButton { /* Cible le bouton par son ID pour la taille */
+    button#captureButton { 
         width: 130px; 
         height: 130px; 
         border-radius: 12px;
@@ -287,7 +287,7 @@ button#captureButton:disabled {
     }
 
     #geminiAnswerText {
-        font-size: 15em; /* 10em * 1.5 = 15em (50% plus grand) */
+        font-size: 15em; 
     }
 }
 
@@ -310,10 +310,10 @@ button#captureButton:disabled {
         height: auto;
         padding-top: 75%;
     }
-    button#captureButton { /* Cible le bouton par son ID pour la taille */
+    button#captureButton { 
         width: 80%;
         height: auto;
-        padding: 25.35px 42.25px; /* Augmenté de 30% */
+        padding: 25.35px 42.25px; 
         font-size: 1.1em;
         border-radius: 8px;
         margin-top: 20px;

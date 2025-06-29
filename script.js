@@ -1,7 +1,3 @@
-// --- PREMIER POINT DE CONTRÔLE : Voir si le script charge du tout ---
-alert("1. script.js a commencé à s'exécuter !"); 
-
-
 // Ton API Key Gemini, insérée directement.
 const GEMINI_API_KEY = "AIzaSyCQWmAaX7TH6_mYQFuk9TbbVK19wLBkxs4"; 
 
@@ -40,7 +36,7 @@ document.body.appendChild(binarizedCanvas);
 
 
 const captureButton = document.getElementById('captureButton');
-const statusMessage = document.getElementById('statusMessage');
+const statusMessage = document.getElementById('statusMessage'); // Va rester vide
 const errorMessage = document.getElementById('errorMessage');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const extractedQuestionText = document.getElementById('extractedQuestionText');
@@ -56,23 +52,24 @@ let stream;
 
 // --- Fonction de démarrage de la caméra ---
 async function startCamera() {
-    alert("3. Fonction startCamera() est appelée !"); // TROISIÈME POINT DE CONTRÔLE
+    // alert("1. script.js a commencé à s'exécuter !"); // Supprimé
+    // alert("3. Fonction startCamera() est appelée !"); // Supprimé
     try {
-        alert("3.5. Juste avant getUserMedia."); // POINT DE CONTRÔLE AVANT getUserMedia
         console.log("startCamera: Tentative de démarrage de la caméra..."); 
+        // alert("3.5. Juste avant getUserMedia."); // Supprimé
         stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
                 facingMode: 'environment' 
             } 
         }); 
         console.log("startCamera: Caméra démarrée avec succès."); 
-        alert("4. Caméra démarrée avec succès !"); // QUATRIÈME POINT DE CONTRÔLE
+        // alert("4. Caméra démarrée avec succès !"); // Supprimé
         
         cameraFeed.srcObject = stream;
-        statusMessage.textContent = ""; 
+        statusMessage.textContent = ""; // Vide le statut pour une interface épurée
         captureButton.disabled = false;
     } catch (error) {
-        alert(`ERREUR CAMÉRA DANS CATCH : ${error.name}\nMessage : ${error.message}\n(C'est l'erreur de getUserMedia)`);
+        // alert(`ERREUR CAMÉRA DANS CATCH : ${error.name}\nMessage : ${error.message}\n(...)`); // Supprimé
         console.error("startCamera: Erreur d'accès à la caméra :", error); 
         if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') {
              errorMessage.textContent = "Caméra arrière introuvable ou non accessible. Vérifiez si une autre application l'utilise ou si la permission est bloquée.";
@@ -94,11 +91,11 @@ captureButton.addEventListener('click', async () => {
         return;
     }
 
-    statusMessage.textContent = "";
+    statusMessage.textContent = ""; // Vide le statut au début du clic
     errorMessage.textContent = "";
     questionResultSection.style.display = "none";
     answerResultSection.style.display = "none";
-    loadingIndicator.style.display = "flex";
+    loadingIndicator.style.display = "flex"; // Affiche l'indicateur de chargement
     captureButton.disabled = true;
     debugBinarizedImage.style.display = "none"; 
 
@@ -114,21 +111,22 @@ captureButton.addEventListener('click', async () => {
 
         console.log("captureButton: Début prétraitement."); 
         
-        statusMessage.textContent = "Conversion en niveaux de gris...";
+        // MODIFICATION : Suppression des statusMessage intermédiaires
+        // statusMessage.textContent = "Conversion en niveaux de gris..."; 
         imageToOcrCanvas = await grayscaleImage(imageToOcrCanvas);
 
         if (INVERT_COLORS) {
-            statusMessage.textContent = "Inversion des couleurs...";
+            // statusMessage.textContent = "Inversion des couleurs..."; 
             imageToOcrCanvas = await invertImage(imageToOcrCanvas);
         }
 
         if (ENABLE_BINARIZATION) { 
-            statusMessage.textContent = "Préparation de l'image (binarisation)...";
+            // statusMessage.textContent = "Préparation de l'image (binarisation)...";
             imageToOcrCanvas = await binarizeImage(imageToOcrCanvas); 
         }
 
         if (UPSCALE_FACTOR > 1) { 
-            statusMessage.textContent = "Agrandissement de l'image...";
+            // statusMessage.textContent = "Agrandissement de l'image...";
             imageToOcrCanvas = await upscaleImage(imageToOcrCanvas, UPSCALE_FACTOR); 
         }
         
@@ -138,7 +136,8 @@ captureButton.addEventListener('click', async () => {
             console.log("captureButton: Image de débogage affichée."); 
         }
         
-        statusMessage.textContent = "Envoi de l'image à l'OCR (Google Vision)...";
+        // MODIFICATION : Suppression du message "Envoi de l'image à l'OCR..."
+        // statusMessage.textContent = "Envoi de l'image à l'OCR (Google Vision)...";
         const ocrText = await performOcr(imageToOcrCanvas.toDataURL('image/png', 1.0)); 
 
         if (!ocrText || ocrText.trim() === '') {
@@ -151,13 +150,15 @@ captureButton.addEventListener('click', async () => {
         extractedQuestionText.textContent = ocrText;
         questionResultSection.style.display = "block";
 
-        statusMessage.textContent = "Demande de réponse à Gemini...";
-        const geminiAnswer = await getAnswerToGemini(ocrText);
+        // MODIFICATION : Suppression du message "Demande de réponse à Gemini..."
+        // statusMessage.textContent = "Demande de réponse à Gemini..."; 
+        const geminiAnswer = await getAnswerToGemini(ocrText); 
 
         geminiAnswerText.textContent = geminiAnswer;
         answerResultSection.style.display = "block";
 
-        statusMessage.textContent = "Prêt pour la prochaine question."; 
+        // MODIFICATION : Suppression du message "Prêt pour la prochaine question."
+        // statusMessage.textContent = "Prêt pour la prochaine question."; 
 
     } catch (error) {
         console.error("Erreur lors du traitement :", error); 
@@ -244,7 +245,7 @@ async function binarizeImage(sourceCanvas) {
 async function performOcr(imageDataUrl) {
     try { 
         const ocrResult = await callNetlifyOcrFunction(imageDataUrl); 
-        statusMessage.textContent = `OCR terminé. Texte reconnu.`;
+        // statusMessage.textContent = `OCR terminé. Texte reconnu.`; // SUPPRIMÉ
         return ocrResult;
     } catch (ocrError) {
         console.error("performOcr: Erreur OCR (Netlify Function):", ocrError); 
