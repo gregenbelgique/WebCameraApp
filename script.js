@@ -130,7 +130,6 @@ captureButton.addEventListener('click', async () => {
             console.log("captureButton: Image de débogage affichée."); 
         }
         
-        statusMessage.textContent = "Envoi de l'image à l'OCR (Google Vision)..."; 
         const ocrText = await performOcr(imageToOcrCanvas.toDataURL('image/png', 1.0)); 
 
         if (!ocrText || ocrText.trim() === '') {
@@ -281,7 +280,7 @@ async function getAnswerToGemini(question) {
             body: JSON.stringify(payload),
         });
 
-        const result = response.json(); // Correction: await here
+        const result = await response.json();
 
         if (result.candidates && result.candidates.length > 0 &&
             result.candidates[0].content && result.candidates[0].content.parts &&
