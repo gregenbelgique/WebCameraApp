@@ -14,8 +14,8 @@ const UPSCALE_FACTOR = 1;
 
 const DEBUG_SHOW_BINARIZED_IMAGE = true; 
 
-// MODIFICATION ICI : Le prompt pour Gemini demande un tiret "-" pour séparer les réponses
-const GEMINI_QCM_PROMPT_PREFIX = "Pour la question de QCM PMI/PMP suivante, réponds uniquement avec la lettre(s) de la bonne(s) réponse(s) parmi A, B, C, D ou E. Si plusieurs réponses sont attendues, sépare les lettres par un seul tiret (ex: 'A-C'). Ne donne aucune explication, aucun autre texte, juste la ou les lettres. La question est : ";
+// MODIFICATION ICI : Prompt Gemini ultra-strict sur le nombre de réponses
+const GEMINI_QCM_PROMPT_PREFIX = "Pour la question de QCM PMI/PMP suivante, si la question ne demande pas explicitement plusieurs réponses, réponds uniquement avec la lettre (A, B, C, D ou E) de la bonne réponse. Si la question demande explicitement plusieurs réponses, sépare les lettres par un seul tiret (ex: 'A-C'). Ne donne aucune explication, aucun autre texte, juste la ou les lettres. La question est : ";
 
 
 // --- Références aux éléments HTML (pour interagir avec la page) ---
@@ -143,8 +143,27 @@ captureButton.addEventListener('click', async () => {
         questionResultSection.style.display = "block";
 
         const geminiAnswer = await getAnswerToGemini(ocrText); 
+        
+        // NOUVELLE LOGIQUE : Post-traitement de la réponse de Gemini
+        let finalAnswer = geminiAnswer.trim();
+        // Vérifie si la question OURED ne demande PAS explicitement plusieurs réponses
+        const explicitMultiAnswer = /deux réponses|plusieurs réponses|choisissez toutes les options|sélectionnez toutes les options|select all that apply/i.test(ocrText);
 
-        geminiAnswerText.textContent = geminiAnswer;
+        if (!explicitMultiAnswer) {
+            // Si la question ne demande pas explicitement plusieurs réponses, et que Gemini en a donné plusieurs (séparées par ' et ' ou '-')
+            if (finalAnswer.includes(' et ') || finalAnswer.includes('-')) {
+                // Tente de n'extraire que la première lettre
+                finalAnswer = finalAnswer.charAt(0).toUpperCase(); 
+            } else if (finalAnswer.length > 1) {
+                // Si c'est juste plusieurs lettres collées ou un mot, prend juste la première lettre
+                 finalAnswer = finalAnswer.charAt(0).toUpperCase();
+            }
+        } else {
+            // Si la question demande explicitement plusieurs réponses, on nettoie juste pour ne garder que les lettres et tirets/espaces
+            finalAnswer = finalAnswer.replace(/[^A-Ea-e\s-]/g, '').toUpperCase();
+        }
+
+        geminiAnswerText.textContent = finalAnswer; // Affiche la réponse finale
         answerResultSection.style.display = "block";
 
     } catch (error) {
